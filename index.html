@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Mexicana Paddle Tournament</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root {
+      --bg: #0b0c0f;
+      --card: #141821;
+      --text: #e7eaf0;
+      --muted: #a8b0c2;
+      --accent: #5dd0ff;
+      --accent-2: #9bff8f;
+      --danger: #ff6b6b;
+      --warn: #ffd166;
+      --ok: #8fd19e;
+      --border: #232838;
+      --input: #101320;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b0c0f 0%, #0e1118 100%);
+      color: var(--text);
+    }
+    header {
+      padding: 24px 16px 8px;
+      display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    }
+    header h1 { font-size: 22px; margin: 0; letter-spacing: 0.2px; }
+    header .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    main { padding: 12px 16px 32px; max-width: 1200px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+    }
+    .span-4 { grid-column: span 4; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+    @media (max-width: 980px){ .span-4, .span-8, .span-12{ grid-column: span 12; } }
+
+    h2 { margin: 4px 0 12px; font-size: 18px; color: var(--accent); }
+    h3 { margin: 8px 0; font-size: 16px; color: var(--muted); }
+
+    input, select, button, textarea {
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--input); color: var(--text);
+      padding: 10px 12px; font-size: 14px;
+    }
+    input::placeholder { color: #6b7280; }
+    button {
+      background: linear-gradient(180deg, #1a2131 0%, #0f1420 100%);
+      cursor: pointer; border: 1px solid #2a334a;
+      transition: transform .06s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    .btn-accent { border-color: #2f5266; background: linear-gradient(180deg, #123448 0%, #0f1c28 100%); color: #cfefff; }
+    .btn-ok { border-color: #2b5a3b; background: linear-gradient(180deg, #134121 0%, #0f2417 100%); color: #d7ffe2; }
+    .btn-warn { border-color: #665226; background: linear-gradient(180deg, #4a3410 0%, #2a1d07 100%); color: #fff0cd; }
+    .btn-danger { border-color: #5a2a2a; background: linear-gradient(180deg, #411313 0%, #2a0f0f 100%); color: #ffdede; }
+
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .col { display: flex; flex-direction: column; gap: 8px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; color: var(--muted); }
+    .pill { padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border); background: #0e1220; }
+    .list { display: grid; gap: 8px; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 8px 10px; border-bottom: 1px dashed #242b3b; text-align: left; }
+    .table th { color: #9fb1ce; font-weight: 600; }
+    .kpi { font-weight: 700; }
+    .tag { font-size: 12px; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); background: #0e1422; color: #b7c4de; }
+    .group { display: grid; gap: 6px; }
+    .hr { height: 1px; background: #1e2433; margin: 8px 0 4px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    .nowrap { white-space: nowrap; }
+    .spacer { flex: 1; }
+    .link { color: #b6e2ff; text-decoration: underline; cursor: pointer; }
+
+    .teams { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .team { background: #101625; border: 1px solid #263049; border-radius: 10px; padding: 8px 10px; }
+    .player { display: flex; justify-content: space-between; }
+    .winner { color: var(--ok); }
+    .loser { color: var(--danger); }
+    .flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .right { text-align: right; }
+    .hidden { display: none; }
+    .wrap { white-space: normal; }
+
+    .toast {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: #111827; color: #e5e7eb; padding: 10px 14px; border-radius: 10px;
+      border: 1px solid #374151; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+      font-size: 14px; z-index: 9999; opacity: 0; transition: opacity .25s ease;
+    }
+    .toast.show { opacity: 1; }
+    .kbd { border: 1px solid #2a334a; background: #0c1220; padding: 1px 6px; border-radius: 6px; font-size: 12px; }
+    a { color: #c2e7ff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mexicana Paddle Tournament</h1>
+    <div class="row">
+      <button id="exportJson" class="btn-accent">Export JSON</button>
+      <button id="importJson" class="btn-warn">Import JSON</button>
+      <button id="resetAll" class="btn-danger">Reset All</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="card span-4" id="playersCard">
+      <h2>Players</h2>
+      <div class="row">
+        <input id="playerName" placeholder="Add player full name" />
+        <button id="addPlayer" class="btn-ok">Add</button>
+      </div>
+      <div class="hr"></div>
+      <div class="row">
+        <span class="small">Start rating</span>
+        <input id="startRating" type="number" value="1000" style="width:100px" />
+        <span class="small">K factor</span>
+        <input id="kFactor" type="number" value="24" style="width:80px" />
+      </div>
+      <div class="hr"></div>
+      <div class="list" id="playersList"></div>
+      <div class="hr"></div>
+      <div class="row">
+        <button id="shuffleTeams" class="btn-accent">Create Teams For New Round</button>
+        <button id="clearScores" class="btn-warn">Clear All Scores</button>
+      </div>
+      <p class="small">Tip: press <span class="kbd">/</span> to focus result input, and <span class="kbd">Enter</span> to save.</p>
+    </section>
+
+    <section class="card span-8">
+      <h2>Current Round</h2>
+      <div class="row">
+        <div class="tag" id="roundTag">Round 0</div>
+        <div class="spacer"></div>
+        <div class="row">
+          <span class="small">Pairing</span>
+          <select id="pairingMode">
+            <option value="mexicana">Mexicana (top with bottom)</option>
+            <option value="random">Random pairs</option>
+            <option value="snake">Snake draft 1-2-2-1</option>
+          </select>
+          <span class="small">Schedule</span>
+          <select id="scheduleMode">
+            <option value="roundrobin">Round robin teams</option>
+            <option value="adjacent">Adjacent only (1 vs 2, 3 vs 4)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="teamsWrap" class="teams"></div>
+
+      <div class="hr"></div>
+      <h3>Matches</h3>
+      <div id="matchesWrap"></div>
+      <div class="hr"></div>
+      <div class="row">
+        <button id="applyResults" class="btn-ok">Apply All Entered Results</button>
+        <button id="undoLast" class="btn-warn">Undo Last Applied</button>
+        <button id="nextRound" class="btn-accent">Recalculate And Make New Teams</button>
+      </div>
+    </section>
+
+    <section class="card span-12">
+      <h2>Standings</h2>
+      <div class="row">
+        <div class="tag">Elo based, doubles use team average</div>
+        <div class="spacer"></div>
+        <div class="row">
+          <label class="small"><input type="checkbox" id="showHistory"> Show history</label>
+        </div>
+      </div>
+      <table class="table" id="standingsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th class="right nowrap">Rating</th>
+            <th class="right nowrap">W L</th>
+            <th class="right nowrap">Points ±</th>
+            <th class="right nowrap">Sets</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="historyWrap" class="hidden">
+        <h3>Rating History</h3>
+        <div id="historyList" class="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <input id="hiddenFile" type="file" accept="application/json" class="hidden" />
+
+  <script>
+    // Persistent tournament state stored in localStorage for a light, serverless Vercel deploy.
+    const LS_KEY = "mexicana_state_v1";
+
+    /** @type {{
+     *  players: Array<{id:string, name:string, rating:number, wins:number, losses:number, pointsFor:number, pointsAgainst:number, history:Array<{round:number, rating:number}> }>,
+     *  rounds: Array<{id:string, index:number, teams:Array<[string,string]>, matches:Array<{id:string, a:[string,string], b:[string,string], scoreA:number|null, scoreB:number|null, applied:boolean}> }>,
+     *  lastApplied:Array<{matchId:string, deltaByPlayer:Record<string, number>, wf:number, wl:number, pf:number, pa:number}>,
+     *  kFactor:number, startRating:number, round:number, pairingMode:string, scheduleMode:string
+     * }}
+     */
+    let state = loadState() || {
+      players: [],
+      rounds: [],
+      lastApplied: [],
+      kFactor: 24,
+      startRating: 1000,
+      round: 0,
+      pairingMode: "mexicana",
+      scheduleMode: "roundrobin"
+    };
+
+    const el = {
+      playerName: document.getElementById("playerName"),
+      addPlayer: document.getElementById("addPlayer"),
+      playersList: document.getElementById("playersList"),
+      shuffleTeams: document.getElementById("shuffleTeams"),
+      nextRound: document.getElementById("nextRound"),
+      clearScores: document.getElementById("clearScores"),
+      applyResults: document.getElementById("applyResults"),
+      undoLast: document.getElementById("undoLast"),
+      teamsWrap: document.getElementById("teamsWrap"),
+      matchesWrap: document.getElementById("matchesWrap"),
+      roundTag: document.getElementById("roundTag"),
+      kFactor: document.getElementById("kFactor"),
+      startRating: document.getElementById("startRating"),
+      standingsTable: document.getElementById("standingsTable").querySelector("tbody"),
+      exportJson: document.getElementById("exportJson"),
+      importJson: document.getElementById("importJson"),
+      hiddenFile: document.getElementById("hiddenFile"),
+      resetAll: document.getElementById("resetAll"),
+      showHistory: document.getElementById("showHistory"),
+      historyWrap: document.getElementById("historyWrap"),
+      historyList: document.getElementById("historyList"),
+      pairingMode: document.getElementById("pairingMode"),
+      scheduleMode: document.getElementById("scheduleMode"),
+      toast: document.getElementById("toast"),
+    };
+
+    // Utility helpers
+    const uid = () => Math.random().toString(36).slice(2, 10);
+    function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+    function loadState(){ try { return JSON.parse(localStorage.getItem(LS_KEY) || ""); } catch { return null; } }
+    function toast(msg){ el.toast.textContent = msg; el.toast.classList.add("show"); setTimeout(()=>el.toast.classList.remove("show"), 1600); }
+    function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+
+    // Player management
+    function addPlayer(name){
+      name = name.trim();
+      if(!name){ toast("Name required"); return; }
+      if(state.players.some(p => p.name.toLowerCase() === name.toLowerCase())){ toast("Duplicate name"); return; }
+      const p = { id: uid(), name, rating: Number(state.startRating)||1000, wins:0, losses:0, pointsFor:0, pointsAgainst:0, history:[] };
+      state.players.push(p);
+      saveState(); renderAll(); toast("Player added");
+    }
+    function removePlayer(id){
+      const usedInOpenMatches = currentRound()?.matches.some(m =>
+        !m.applied && (m.a.includes(id) || m.b.includes(id)));
+      if(usedInOpenMatches){ toast("Cannot remove: player in a pending match"); return; }
+      state.players = state.players.filter(p => p.id !== id);
+      saveState(); renderAll(); toast("Player removed");
+    }
+
+    // Pairing and schedule
+    function pairTeams(mode){
+      const players = deepClone(state.players);
+      if(players.length < 4){ return []; }
+      // Sort by rating for Mexicana and Snake modes.
+      const byRating = players.sort((a,b)=>b.rating - a.rating);
+      let order = [];
+      if(mode === "random"){
+        order = shuffle(players.map(p=>p.id));
+      } else if(mode === "snake"){
+        const half = Math.floor(players.length/2);
+        const top = byRating.slice(0, half).map(p=>p.id);
+        const bot = byRating.slice(half).map(p=>p.id);
+        // snake combine: t1,b1,b2,t2,t3,b3,b4,t4, etc.
+        let i=0,j=0; let alt=0;
+        while(i<top.length || j<bot.length){
+          if(alt%3===0 && i<top.length){ order.push(top[i++]); }
+          else if(j<bot.length){ order.push(bot[j++]); }
+          alt++;
+        }
+      } else { // mexicana default
+        order = byRating.map(p=>p.id);
+      }
+      // Pair top with bottom for Mexicana, or sequential pairs for others.
+      let teams = [];
+      if(state.pairingMode === "mexicana"){
+        const half = Math.floor(order.length/2);
+        const topHalf = order.slice(0, half);
+        const bottomHalf = order.slice(-half).reverse();
+        for(let i=0;i<half;i++){ teams.push([topHalf[i], bottomHalf[i]]); }
+      } else {
+        for(let i=0;i+1<order.length;i+=2){ teams.push([order[i], order[i+1]]); }
+      }
+      // If odd player count, last player sits out this round.
+      if(order.length % 2 === 1){ toast("Odd count: one player will sit out"); }
+      return teams;
+    }
+
+    function scheduleMatches(teams, scheduleMode){
+      const matches = [];
+      if(teams.length < 2) return matches;
+      if(scheduleMode === "adjacent"){
+        for(let i=0;i+1<teams.length;i+=2){
+          matches.push({ id: uid(), a: teams[i], b: teams[i+1], scoreA:null, scoreB:null, applied:false });
+        }
+        return matches;
+      }
+      // round-robin among teams for this round.
+      for(let i=0;i<teams.length;i++){
+        for(let j=i+1;j<teams.length;j++){
+          matches.push({ id: uid(), a: teams[i], b: teams[j], scoreA:null, scoreB:null, applied:false });
+        }
+      }
+      return matches;
+    }
+
+    function newRound(){
+      if(state.players.length < 4){ toast("Add at least 4 players"); return; }
+      const teams = pairTeams(state.pairingMode);
+      if(teams.length === 0){ toast("Not enough players or pairing failed"); return; }
+      const matches = scheduleMatches(teams, state.scheduleMode);
+      state.round += 1;
+      const rnd = { id: uid(), index: state.round, teams, matches };
+      state.rounds.push(rnd);
+      saveState(); renderAll(); toast("New round created");
+    }
+
+    function currentRound(){
+      if(state.rounds.length === 0) return null;
+      return state.rounds[state.rounds.length-1];
+    }
+
+    function playerById(id){ return state.players.find(p=>p.id===id); }
+    function playerName(id){ const p = playerById(id); return p ? p.name : "Unknown"; }
+
+    // Results handling
+    function parseScore(text){
+      if(typeof text !== "string") return null;
+      const t = text.trim();
+      const m = t.match(/^(\d+)\s*[:\-]\s*(\d+)$/);
+      if(!m) return null;
+      return [parseInt(m[1],10), parseInt(m[2],10)];
+    }
+
+    function expectedScore(ratingA, ratingB){
+      return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
+    }
+
+    function applyMatchResult(match, scoreA, scoreB){
+      if(match.applied){ return null; }
+      const teamA = match.a.map(playerById);
+      const teamB = match.b.map(playerById);
+      if(teamA.includes(undefined) || teamB.includes(undefined)){ return null; }
+
+      const avgA = (teamA[0].rating + teamA[1].rating)/2;
+      const avgB = (teamB[0].rating + teamB[1].rating)/2;
+
+      const expA = expectedScore(avgA, avgB);
+      const expB = 1 - expA;
+
+      const sA = scoreA > scoreB ? 1 : (scoreA === scoreB ? 0.5 : 0);
+      const sB = 1 - sA;
+
+      // Margin scaling: ln(diff + 1) to softly reward wider wins.
+      const diff = Math.abs(scoreA - scoreB);
+      const margin = Math.log(diff + 1);
+      const K = Number(state.kFactor)||24;
+      const kScaled = K * (1 + margin * 0.5);
+
+      const deltaA = kScaled * (sA - expA);
+      const deltaB = kScaled * (sB - expB);
+
+      // Apply to both players equally.
+      const deltaPerA = deltaA / 2;
+      const deltaPerB = deltaB / 2;
+
+      const changes = { matchId: match.id, deltaByPlayer: {}, wf:0, wl:0, pf:0, pa:0 };
+
+      teamA.forEach(p=>{
+        p.rating = Math.round(p.rating + deltaPerA);
+        if(sA === 1){ p.wins++; changes.wf++; } else if(sA === 0){ p.losses++; changes.wl++; }
+        p.pointsFor += scoreA; p.pointsAgainst += scoreB; changes.pf += scoreA; changes.pa += scoreB;
+        p.history.push({ round: state.round, rating: p.rating });
+        changes.deltaByPlayer[p.id] = (changes.deltaByPlayer[p.id]||0) + deltaPerA;
+      });
+      teamB.forEach(p=>{
+        p.rating = Math.round(p.rating + deltaPerB);
+        if(sB === 1){ p.wins++; changes.wf++; } else if(sB === 0){ p.losses++; changes.wl++; }
+        p.pointsFor += scoreB; p.pointsAgainst += scoreA; changes.pf += scoreB; changes.pa += scoreA;
+        p.history.push({ round: state.round, rating: p.rating });
+        changes.deltaByPlayer[p.id] = (changes.deltaByPlayer[p.id]||0) + deltaPerB;
+      });
+
+      match.scoreA = scoreA; match.scoreB = scoreB; match.applied = true;
+      return changes;
+    }
+
+    function applyAllEntered(){
+      const rnd = currentRound();
+      if(!rnd){ toast("No current round"); return; }
+      let applied = 0;
+      const batch = [];
+      for(const m of rnd.matches){
+        const input = document.getElementById("score_"+m.id);
+        if(!input) continue;
+        const parsed = parseScore(input.value);
+        if(!parsed) continue;
+        if(m.applied) continue;
+        const changes = applyMatchResult(m, parsed[0], parsed[1]);
+        if(changes){ batch.push(changes); applied++; }
+      }
+      if(applied === 0){ toast("No valid new results to apply"); return; }
+      state.lastApplied = batch;
+      saveState(); renderAll(); toast("Applied "+applied+" result(s)");
+    }
+
+    function undoLastApplied(){
+      if(!state.lastApplied || state.lastApplied.length === 0){ toast("Nothing to undo"); return; }
+      // Rebuild a lookup for matches by id.
+      const rnd = currentRound();
+      const matchById = {};
+      if(rnd){ rnd.matches.forEach(m=>matchById[m.id]=m); }
+      // Reverse the recorded batch.
+      for(const change of state.lastApplied){
+        const m = matchById[change.matchId];
+        if(m){
+          m.applied = false;
+          m.scoreA = null;
+          m.scoreB = null;
+        }
+        for(const pid in change.deltaByPlayer){
+          const p = playerById(pid);
+          if(!p) continue;
+          const delta = change.deltaByPlayer[pid];
+          p.rating = Math.round(p.rating - delta);
+          // We approximate undo of W/L and points from the stored aggregates.
+          // Since we cannot split per player precisely, we prorate by team symmetry.
+          // This is acceptable for quick undo without full ledger.
+          // Remove last history point if it belongs to current round.
+          const last = p.history[p.history.length-1];
+          if(last && last.round === state.round){ p.history.pop(); }
+        }
+      }
+      // Because W/L and points were aggregated, we need a precise rollback for those too.
+      // The simplest correct path is to recompute aggregate W/L and points from the full ledger of matches.
+      recomputeAggregatesFromMatches();
+      state.lastApplied = [];
+      saveState(); renderAll(); toast("Undone last apply");
+    }
+
+    function recomputeAggregatesFromMatches(){
+      // Reset aggregates and recompute based on all applied matches so far.
+      state.players.forEach(p=>{ p.wins=0; p.losses=0; p.pointsFor=0; p.pointsAgainst=0; p.history=[]; });
+      // Reset ratings to initial, then replay matches in chronological round order.
+      state.players.forEach(p=>{ p.rating = Number(state.startRating)||1000; });
+      const all = [];
+      for(const rnd of state.rounds){
+        for(const m of rnd.matches){
+          if(m.applied){ all.push({rnd, m}); }
+        }
+      }
+      // Sort by round index to preserve order of updates.
+      all.sort((a,b)=>a.rnd.index - b.rnd.index);
+      const saveRound = state.round;
+      for(const {m} of all){
+        // For replay we need stored scores.
+        if(m.scoreA==null || m.scoreB==null) continue;
+        // Temporarily set state.round for history tagging.
+        // Match was applied in that historical round index.
+        state.round = getRoundIndexOfMatch(m.id) || state.round;
+        const tmp = applyMatchResultForReplay(m, m.scoreA, m.scoreB);
+        // applyMatchResultForReplay does not flip applied flag.
+      }
+      state.round = saveRound;
+    }
+    function applyMatchResultForReplay(match, scoreA, scoreB){
+      // Same math, but do not set applied flag and do not overwrite scores.
+      const teamA = match.a.map(playerById);
+      const teamB = match.b.map(playerById);
+      if(teamA.includes(undefined) || teamB.includes(undefined)){ return null; }
+
+      const avgA = (teamA[0].rating + teamA[1].rating)/2;
+      const avgB = (teamB[0].rating + teamB[1].rating)/2;
+
+      const expA = expectedScore(avgA, avgB);
+      const expB = 1 - expA;
+
+      const sA = scoreA > scoreB ? 1 : (scoreA === scoreB ? 0.5 : 0);
+      const sB = 1 - sA;
+
+      const diff = Math.abs(scoreA - scoreB);
+      const margin = Math.log(diff + 1);
+      const K = Number(state.kFactor)||24;
+      const kScaled = K * (1 + margin * 0.5);
+
+      const deltaA = kScaled * (sA - expA);
+      const deltaB = kScaled * (sB - expB);
+
+      const deltaPerA = deltaA / 2;
+      const deltaPerB = deltaB / 2;
+
+      teamA.forEach(p=>{
+        p.rating = Math.round(p.rating + deltaPerA);
+        if(sA === 1){ p.wins++; } else if(sA === 0){ p.losses++; }
+        p.pointsFor += scoreA; p.pointsAgainst += scoreB;
+        p.history.push({ round: state.round, rating: p.rating });
+      });
+      teamB.forEach(p=>{
+        p.rating = Math.round(p.rating + deltaPerB);
+        if(sB === 1){ p.wins++; } else if(sB === 0){ p.losses++; }
+        p.pointsFor += scoreB; p.pointsAgainst += scoreA;
+        p.history.push({ round: state.round, rating: p.rating });
+      });
+      return true;
+    }
+    function getRoundIndexOfMatch(matchId){
+      for(const r of state.rounds){ if(r.matches.some(m=>m.id===matchId)) return r.index; }
+      return null;
+    }
+
+    // Rendering
+    function renderPlayers(){
+      const list = el.playersList;
+      list.innerHTML = "";
+      const sorted = [...state.players].sort((a,b)=>b.rating - a.rating);
+      for(const p of sorted){
+        const row = document.createElement("div");
+        row.className = "row";
+        const name = document.createElement("div");
+        name.className = "pill";
+        name.textContent = p.name;
+        const stat = document.createElement("div");
+        stat.className = "small";
+        stat.textContent = "Rating "+p.rating+" • W"+p.wins+"-L"+p.losses+" • ±"+(p.pointsFor-p.pointsAgainst);
+        const del = document.createElement("button");
+        del.textContent = "Remove";
+        del.className = "btn-danger";
+        del.onclick = ()=>removePlayer(p.id);
+        row.append(name, stat, del);
+        list.appendChild(row);
+      }
+    }
+
+    function renderTeamsAndMatches(){
+      const rnd = currentRound();
+      el.roundTag.textContent = "Round "+state.round;
+      el.teamsWrap.innerHTML = "";
+      el.matchesWrap.innerHTML = "";
+      if(!rnd){
+        el.teamsWrap.innerHTML = "<div class='muted'>No round yet. Create teams to start.</div>";
+        return;
+      }
+      // Teams
+      rnd.teams.forEach((t, idx)=>{
+        const teamDiv = document.createElement("div");
+        teamDiv.className = "team";
+        const pa = playerById(t[0]); const pb = playerById(t[1]);
+        const avg = Math.round((pa.rating + pb.rating)/2);
+        teamDiv.innerHTML = `
+          <div class="small muted">Team ${idx+1} • Avg ${avg}</div>
+          <div class="player"><span>${pa.name}</span><span class="small muted">R ${pa.rating}</span></div>
+          <div class="player"><span>${pb.name}</span><span class="small muted">R ${pb.rating}</span></div>
+        `;
+        el.teamsWrap.appendChild(teamDiv);
+      });
+      // Matches
+      const wrap = document.createElement("div");
+      wrap.className = "list";
+      rnd.matches.forEach((m, i)=>{
+        const card = document.createElement("div");
+        card.className = "team";
+        const a0 = playerName(m.a[0]), a1 = playerName(m.a[1]), b0 = playerName(m.b[0]), b1 = playerName(m.b[1]);
+        const scoreText = m.scoreA!=null? `${m.scoreA}:${m.scoreB}` : "";
+        card.innerHTML = `
+          <div class="row">
+            <div class="small muted">Match ${i+1}</div>
+            <div class="spacer"></div>
+            <div class="small ${m.applied?'winner':''}">${m.applied?'applied':''}</div>
+          </div>
+          <div class="row wrap">
+            <div><span class="kpi">${a0}</span> + <span class="kpi">${a1}</span></div>
+            <div class="muted">vs</div>
+            <div><span class="kpi">${b0}</span> + <span class="kpi">${b1}</span></div>
+          </div>
+          <div class="row">
+            <input id="score_${m.id}" class="mono" placeholder="e.g. 12:14" value="${scoreText}" />
+            <button class="btn-ok" id="save_${m.id}">Save</button>
+          </div>
+        `;
+        wrap.appendChild(card);
+        setTimeout(()=>{
+          const scoreInput = document.getElementById("score_"+m.id);
+          const saveBtn = document.getElementById("save_"+m.id);
+          saveBtn.onclick = ()=>{
+            const parsed = parseScore(scoreInput.value);
+            if(!parsed){ toast("Invalid score, use N:N"); return; }
+            if(m.applied){ toast("Already applied, undo or edit after undo"); return; }
+            m.scoreA = parsed[0]; m.scoreB = parsed[1];
+            saveState(); renderTeamsAndMatches(); toast("Saved score");
+          };
+        },0);
+      });
+      el.matchesWrap.appendChild(wrap);
+    }
+
+    function renderStandings(){
+      const tbody = el.standingsTable;
+      tbody.innerHTML = "";
+      const rows = [...state.players].sort((a,b)=>b.rating - a.rating);
+      rows.forEach((p, idx)=>{
+        const tr = document.createElement("tr");
+        const diff = p.pointsFor - p.pointsAgainst;
+        tr.innerHTML = `
+          <td class="mono">${idx+1}</td>
+          <td>${p.name}</td>
+          <td class="right mono">${p.rating}</td>
+          <td class="right mono">${p.wins} ${p.losses}</td>
+          <td class="right mono ${diff>=0?'winner':'loser'}">${diff>=0?'+':''}${diff}</td>
+          <td class="right mono">${p.pointsFor}:${p.pointsAgainst}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const show = el.showHistory.checked;
+      el.historyWrap.classList.toggle("hidden", !show);
+      if(show){
+        el.historyList.innerHTML = "";
+        for(const p of rows){
+          const div = document.createElement("div");
+          div.className = "team";
+          const hist = p.history.map(h=>`R${h.round}:${h.rating}`).join("  ");
+          div.innerHTML = `<div><strong>${p.name}</strong></div><div class="small mono muted">${hist || "No changes yet"}</div>`;
+          el.historyList.appendChild(div);
+        }
+      }
+    }
+
+    function renderAll(){
+      el.kFactor.value = state.kFactor;
+      el.startRating.value = state.startRating;
+      el.pairingMode.value = state.pairingMode;
+      el.scheduleMode.value = state.scheduleMode;
+      renderPlayers();
+      renderTeamsAndMatches();
+      renderStandings();
+    }
+
+    // Helpers
+    function shuffle(arr){
+      const a = [...arr];
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
+    }
+
+    // Event bindings
+    el.addPlayer.onclick = ()=>addPlayer(el.playerName.value);
+    el.playerName.addEventListener("keydown", e=>{
+      if(e.key==="Enter"){ addPlayer(el.playerName.value); el.playerName.value=""; }
+    });
+    el.shuffleTeams.onclick = ()=>{ state.pairingMode = el.pairingMode.value; state.scheduleMode = el.scheduleMode.value; newRound(); };
+    el.nextRound.onclick = ()=>{
+      state.pairingMode = el.pairingMode.value;
+      state.scheduleMode = el.scheduleMode.value;
+      newRound();
+    };
+    el.applyResults.onclick = applyAllEntered;
+    el.undoLast.onclick = undoLastApplied;
+
+    el.clearScores.onclick = ()=>{
+      const rnd = currentRound();
+      if(!rnd){ toast("No round"); return; }
+      rnd.matches.forEach(m=>{ if(!m.applied){ m.scoreA=null; m.scoreB=null; } });
+      saveState(); renderTeamsAndMatches(); toast("Cleared pending scores");
+    };
+
+    el.kFactor.onchange = ()=>{ state.kFactor = Number(el.kFactor.value)||24; saveState(); toast("K updated"); };
+    el.startRating.onchange = ()=>{ state.startRating = Number(el.startRating.value)||1000; saveState(); toast("Start rating updated"); };
+
+    el.pairingMode.onchange = ()=>{ state.pairingMode = el.pairingMode.value; saveState(); };
+    el.scheduleMode.onchange = ()=>{ state.scheduleMode = el.scheduleMode.value; saveState(); };
+
+    el.exportJson.onclick = ()=>{
+      const blob = new Blob([JSON.stringify(state, null, 2)], {type: "application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "mexicana_tournament.json";
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    };
+    el.importJson.onclick = ()=>el.hiddenFile.click();
+    el.hiddenFile.onchange = (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const data = JSON.parse(reader.result);
+          if(!data || !Array.isArray(data.players)){ throw new Error("Invalid file"); }
+          state = data; saveState(); renderAll(); toast("Imported");
+        }catch(err){ console.error(err); toast("Failed to import"); }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    };
+
+    el.resetAll.onclick = ()=>{
+      if(!confirm("This will wipe all players and rounds. Continue?")) return;
+      state = {
+        players: [], rounds: [], lastApplied: [],
+        kFactor: 24, startRating: 1000, round: 0,
+        pairingMode: "mexicana", scheduleMode: "roundrobin"
+      };
+      saveState(); renderAll(); toast("Reset complete");
+    };
+
+    // Keyboard shortcuts: "/" focuses first empty score input, Enter on focused saves.
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "/"){
+        e.preventDefault();
+        const inputs = Array.from(document.querySelectorAll('input[id^="score_"]'));
+        const target = inputs.find(inp => !inp.value) || inputs[0];
+        if(target){ target.focus(); }
+      }
+      if(e.key === "Enter"){
+        const active = document.activeElement;
+        if(active && active.id && active.id.startsWith("score_")){
+          const id = active.id.replace("score_", "");
+          const btn = document.getElementById("save_"+id);
+          if(btn){ btn.click(); }
+        }
+      }
+    });
+
+    // Initial paint
+    renderAll();
+  </script>
+</body>
+</html>
